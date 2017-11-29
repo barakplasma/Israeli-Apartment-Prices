@@ -53,5 +53,6 @@ osmosis
             .value();
         console.log(mostlyFlipped);
     })
+    .log(console.log)
     .error(console.log)
     .debug(console.log)
