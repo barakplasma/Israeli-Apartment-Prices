@@ -1,0 +1,16 @@
+{
+  "name": "yad2scraper",
+  "version": "1.0.0",
+  "description": "helps you get apartment price data from yad2",
+  "main": "index.ts",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Salaverry",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "osmosis": "^1.1.4"
+  }
+}
