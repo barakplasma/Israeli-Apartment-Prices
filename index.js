@@ -4,12 +4,14 @@ const fs = require('fs');
 
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
-const query = `location_type=3&area=2&fromRooms=1&toRooms=1&fromPrice=2000&toPrice=3000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
+const query = `location_type=3&area=2&fromRooms=1&toRooms=1&fromPrice=2000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
 const url = baseUrl + yad2searchUrl + query;
 
 osmosis.config('follow', 0)
 
 osmosis.config('user_agent', `Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25`)
+
+fs.writeFileSync('./housing.json','[');
 
 osmosis
     .get(url)
@@ -27,12 +29,13 @@ osmosis
     })
     .data(function (listing) {
         if(_.has(listing,'latlon')){
-        const extractedLocation = listing.latlon.match(/\d\d[^\&]+/);
-        if(_.has(extractedLocation, [0]) && !_.isNil(extractedLocation[0])) {
-            _.set(listing,'latlon', extractedLocation[0]);
-            console.log(extractedLocation[0]);
+            console.log(listing.latlon);
+            const extractedLocation = listing.latlon.match(/=(\d+).(\d+),(\d+).(\d+)/);
+        if(_.has(extractedLocation, [1]) && !_.isNil(extractedLocation[1])) {
+            _.set(listing,'latlon', `${extractedLocation[1]}.${extractedLocation[2]},${extractedLocation[3]}.${extractedLocation[4]}`);
+            console.log(listing.latlon);
             _.set(listing,'price', listing.price.split(',').join('').slice(0,-2));
-            fs.appendFile('./housing.json', `[${extractedLocation[0]},${listing.price}],`);
+            fs.appendFile('./housing.json', `[${listing.latlon},${listing.price}],`);
         }}
     })
     .log(console.log)
