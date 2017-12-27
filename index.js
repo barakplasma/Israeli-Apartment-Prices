@@ -1,16 +1,19 @@
-var osmosis = require('osmosis');
-var _ = require('lodash');
+const osmosis = require('osmosis');
+const _ = require('lodash');
+const fs = require('fs');
 
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
-const query = `location_type=3&area=2&fromRooms=1&toRooms=2&fromPrice=2000&toPrice=3000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
+const query = `location_type=3&area=2&fromRooms=1&toRooms=1&fromPrice=2000&toPrice=3000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
 const url = baseUrl + yad2searchUrl + query;
 
 const flipHebrew = (hebrew) => {
     if(_.isString(hebrew)){
-        return _.reverse(hebrew.split('')).join('')
+        return _.reverse(hebrew.split('')).join('');
+    } else if (!_.isNil(hebrew)) {
+        return hebrew;
     } else {
-        return '32.0806761,34.8200468';
+        return '';
     }
 };
 
@@ -34,24 +37,33 @@ osmosis
     })
     .data(function (listing) {
         // do something with listing data
-        const flipped = _.mapValues(listing, flipHebrew);
-        const mostlyFlipped = _(flipped)
-            .set('price', 
-                _.parseInt(flipHebrew(flipped.price)
-                .split(',')
-                .join('')
-                .slice(0,-2))
-            )
-            .set('latlon', 
-                flipHebrew(flipped.latlon)
-                .match(/\d\d[^\&]+/)[0]
-            )
-            .set('sqm', 
-                _.parseInt(flipHebrew(flipped.sqm)
-                .match(/\d+/)[0])
-            )
-            .value();
-        console.log(mostlyFlipped);
+
+        // const flipped = _.mapValues(listing, flipHebrew);
+        // const mostlyFlipped = _(flipped)
+        //     .set('price', 
+        //         _.parseInt(flipHebrew(flipped.price)
+        //         .split(',')
+        //         .join('')
+        //         .slice(0,-2))
+        //     )
+        //     .set('latlon', 
+        //         flipHebrew(flipped.latlon)
+        //         .match(/\d\d[^\&]+/)[0]
+        //     )
+        //     .set('sqm', 
+        //         _.parseInt(flipHebrew(flipped.sqm)
+        //         .match(/\d+/)[0])
+        //     )
+        //     .value();
+        // console.log(mostlyFlipped);
+        if(_.has(listing,'latlon')){
+        const extractedLocation = listing.latlon.match(/\d\d[^\&]+/);
+        if(_.has(extractedLocation, [0]) && !_.isNil(extractedLocation[0])) {
+            _.set(listing,'latlon', extractedLocation[0]);
+            console.log(extractedLocation[0]);
+            _.set(listing,'price', listing.price.split(',').join('').slice(0,-2));
+            fs.appendFile('./housing.json', `[${extractedLocation[0]},${listing.price}],`);
+        }}
     })
     .log(console.log)
     .error(console.log)
