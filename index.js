@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
-const query = `location_type=3&area=2&fromRooms=1&toRooms=1&fromPrice=2000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
+const query = `location_type=3&area=2&fromRooms=3&toRooms=3&fromPrice=2000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
 const url = baseUrl + yad2searchUrl + query;
 
 osmosis.config('follow', 0)
@@ -34,10 +34,15 @@ osmosis
         if(_.has(extractedLocation, [1]) && !_.isNil(extractedLocation[1])) {
             _.set(listing,'latlon', `${extractedLocation[1]}.${extractedLocation[2]},${extractedLocation[3]}.${extractedLocation[4]}`);
             console.log(listing.latlon);
-            _.set(listing,'price', listing.price.split(',').join('').slice(0,-2));
+            const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
+            _.set(listing,'price', normalizeValue(price, 2000, 10000));
+            console.log(listing.price);
             fs.appendFile('./housing.json', `[${listing.latlon},${listing.price}],`);
         }}
     })
     .log(console.log)
     .error(console.log)
     .debug(console.log)
+
+// https://stackoverflow.com/a/39777131
+function normalizeValue(val, max, min) { return (val - min) / (max - min); }
