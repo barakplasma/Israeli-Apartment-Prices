@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
-const query = `location_type=3&area=2&fromRooms=3&toRooms=3&fromPrice=2000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
+const query = `location_type=3&area=2&fromRooms=3&toRooms=3&fromPrice=2000&toPrice=9000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
 const url = baseUrl + yad2searchUrl + query;
 
 osmosis.config('follow', 0)
