@@ -4,14 +4,22 @@ const fs = require('fs');
 
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
-const query = `location_type=3&area=2&fromRooms=3&toRooms=3&fromPrice=2000&toPrice=9000&airConditioner=1&renovated=1&priceOnly=1&imgOnly=1`;
+const minRooms = 3;
+const maxRooms = 4;
+const minPrice = 5000;
+const maxPrice = 6500;
+const priceAndSize = `&fromRooms=${minRooms}&toRooms=${maxRooms}&fromPrice=${minPrice}&toPrice=${maxPrice}`;
+const location = `location_type=3&area=47`;
+const otherOptions = `&priceOnly=1&imgOnly=1`;
+const query = location + priceAndSize + otherOptions;
 const url = baseUrl + yad2searchUrl + query;
 
 osmosis.config('follow', 0)
 
 osmosis.config('user_agent', `Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25`)
 
-fs.writeFileSync('./housing.json','[');
+const handleErrors = (err) => {if (err) throw err;}
+fs.writeFileSync('./housing.json','[', handleErrors);
 
 osmosis
     .get(url)
@@ -29,20 +37,28 @@ osmosis
     })
     .data(function (listing) {
         if(_.has(listing,'latlon')){
-            console.log(listing.latlon);
+            // console.log(listing.latlon);
             const extractedLocation = listing.latlon.match(/=(\d+).(\d+),(\d+).(\d+)/);
         if(_.has(extractedLocation, [1]) && !_.isNil(extractedLocation[1])) {
             _.set(listing,'latlon', `${extractedLocation[1]}.${extractedLocation[2]},${extractedLocation[3]}.${extractedLocation[4]}`);
             console.log(listing.latlon);
             const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
-            _.set(listing,'price', normalizeValue(price, 2000, 10000));
-            console.log(listing.price);
-            fs.appendFile('./housing.json', `[${listing.latlon},${listing.price}],`);
+            _.set(listing,'price', price);
+            // _.set(listing,'price', normalizeValue(price, minPrice, maxPrice));
+            // console.log(listing.price);
+            fs.appendFile('./housing.json', `[${listing.latlon},${listing.price}],`, {encoding: 'utf8'}, handleErrors);
         }}
     })
     .log(console.log)
     .error(console.log)
     .debug(console.log)
+    .then(() =>{
+        const start = `let housingPrices =`;
+        const middle = fs.readFileSync('./housing.json', {encoding: 'utf8'});
+        const end = `];`;
+        const toWrite = `${start}${middle}${end}`;
+        fs.writeFile('rentalData.js', toWrite, handleErrors);
+    })
 
 // https://stackoverflow.com/a/39777131
-function normalizeValue(val, max, min) { return (val - min) / (max - min); }
+// function normalizeValue(val, max, min) { return (val - min) / (max - min); }
