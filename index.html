@@ -4,11 +4,6 @@
     <title>Rental Price Demo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
-    <!-- <script src="../node_modules/simpleheat/simpleheat.js"></script>
-    <script src="../src/HeatLayer.js"></script> -->
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js" integrity="sha256-8E6QUcFg1KTnpEU8TFGhpTGHw5fJqB9vCms3OhAYLqw=" crossorigin="anonymous"></script>
     
     <script src='//cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js'></script>
 
@@ -36,10 +31,7 @@ var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-housingPricesParsedForMap = housingPrices.map(function (p) { return [p[0], p[1]]; });
-
-var heat = L.heatLayer(housingPricesParsedForMap, {radius: 30}).addTo(map);
-
+// generate statistics
 var jstat = window.jStat(housingPrices.map(p=>p[2])); // jStat will be added to the window
 const priceDistribution = jstat.quantiles([0.25, 0.5, 0.75]);
 
@@ -48,8 +40,28 @@ document.body.appendChild(priceDistributionDisplay);
 
 document.body.appendChild(document.createElement('br'));
 
-const averagePriceElement = document.createTextNode(`average price is ${_.floor(jstat.mean(),2)}`);
+const averagePriceElement = document.createTextNode(`average price is ${Math.floor(jstat.mean())}`);
 document.body.appendChild(averagePriceElement);
+
+document.body.appendChild(document.createElement('br'));
+
+const priceHistogramDisplay = document.createTextNode(`price histogram: ${jstat.histogram(4)}`);
+document.body.appendChild(priceHistogramDisplay);
+
+// add markers
+const circle = (fill) => `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="100" fill="hsl(${(1 - fill) * 80}, 100%, 50%)" opacity="0.5"/>
+  </svg>`;
+
+housingPrices.forEach(price => {
+    const actualPrice = price[2];
+    let markerLocation = new L.LatLng(price[0], price[1]);
+    let icon = L.icon({iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(circle(jstat.percentileOfScore(actualPrice)))}`, iconSize: [50, 50]})
+    let marker = new L.Marker(markerLocation, {icon});
+    map.addLayer(marker);
+            
+    marker.bindPopup(`price: ${actualPrice}`);
+});
 
 </script>
 </body>
