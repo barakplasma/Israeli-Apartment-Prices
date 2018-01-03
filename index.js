@@ -53,10 +53,11 @@ osmosis
     .error(console.log)
     .debug(console.log)
     .then(() =>{
-        const start = `let housingPrices =`;
         const middle = fs.readFileSync('./housing.json', {encoding: 'utf8'});
-        const end = `];`;
-        const toWrite = `${start}${middle}${end}`;
+        const cleanMiddle = _.trimEnd(middle, ',');
+        const toWrite = `
+            let housingPrices = ${cleanMiddle}];
+        `;
         fs.writeFile('rentalData.js', toWrite, handleErrors);
     })
 

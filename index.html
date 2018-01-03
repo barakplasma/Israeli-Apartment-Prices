@@ -4,6 +4,16 @@
     <title>Rental Price Demo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <!-- <script src="../node_modules/simpleheat/simpleheat.js"></script>
+    <script src="../src/HeatLayer.js"></script> -->
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js" integrity="sha256-8E6QUcFg1KTnpEU8TFGhpTGHw5fJqB9vCms3OhAYLqw=" crossorigin="anonymous"></script>
+    
+    <script src='//cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js'></script>
+
+    <script src="./rentalData.js"></script>
+
     <style>
         #map { width: 800px; height: 600px; }
         body { font: 16px/1.4 "Helvetica Neue", Arial, sans-serif; }
@@ -19,23 +29,20 @@
 
 <div id="map"></div>
 
-<!-- <script src="../node_modules/simpleheat/simpleheat.js"></script>
-<script src="../src/HeatLayer.js"></script> -->
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
-
-<script src="./rentalData.js"></script>
 <script>
-
 var map = L.map('map').setView([32.0563415,34.7756503], 13);
 
 var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-housingPrices = housingPrices.map(function (p) { return [p[0], p[1]]; });
+housingPricesParsedForMap = housingPrices.map(function (p) { return [p[0], p[1]]; });
 
-var heat = L.heatLayer(housingPrices, {radius: 30}).addTo(map);
+var heat = L.heatLayer(housingPricesParsedForMap, {radius: 30}).addTo(map);
+
+averagePrice = _.chain(housingPrices).meanBy((priceArray) => priceArray[2]).floor(2).value();
+const averagePriceElement = document.createTextNode(`average price is ${averagePrice}`);
+document.body.appendChild(averagePriceElement);
 
 </script>
 </body>
