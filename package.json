@@ -10,8 +10,8 @@
   "author": "Michael Salaverry",
   "license": "MIT",
   "dependencies": {
-    "direction": "^1.0.1",
     "lodash": "^4.17.4",
-    "osmosis": "^1.1.4"
+    "osmosis": "^1.1.4",
+    "serve": "^6.4.5"
   }
 }
