@@ -4,10 +4,10 @@ const fs = require('fs');
 
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
-const minRooms = 3;
-const maxRooms = 4;
-const minPrice = 5000;
-const maxPrice = 6500;
+const minRooms = 1;
+const maxRooms = 1;
+const minPrice = 1500;
+const maxPrice = 4000;
 const priceAndSize = `&fromRooms=${minRooms}&toRooms=${maxRooms}&fromPrice=${minPrice}&toPrice=${maxPrice}`;
 const location = `location_type=3&area=47`;
 const otherOptions = `&priceOnly=1&imgOnly=1`;
@@ -35,18 +35,22 @@ osmosis
         'floor': '.ad_page_item_info_bar_item_title:nth(1)',
         'sqm': '.ad_page_item_info_bar_item_title:nth(2)'
     })
+    .then(function(context, data, next) {
+        data.url = context.__location.url.href;
+        next(context, data);
+    })
     .data(function (listing) {
         if(_.has(listing,'latlon')){
             // console.log(listing.latlon);
             const extractedLocation = listing.latlon.match(/=(\d+).(\d+),(\d+).(\d+)/);
         if(_.has(extractedLocation, [1]) && !_.isNil(extractedLocation[1])) {
             _.set(listing,'latlon', `${extractedLocation[1]}.${extractedLocation[2]},${extractedLocation[3]}.${extractedLocation[4]}`);
-            console.log(listing.latlon);
+            // console.log(listing.latlon);
             const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
             _.set(listing,'price', price);
             // _.set(listing,'price', normalizeValue(price, minPrice, maxPrice));
-            // console.log(listing.price);
-            fs.appendFile('./housing.json', `[${listing.latlon},${listing.price}],`, {encoding: 'utf8'}, handleErrors);
+            console.log(listing);
+            fs.appendFile('./housing.json', `[${listing.latlon},${listing.price},"${listing.url}"],`, {encoding: 'utf8'}, handleErrors);
         }}
     })
     .log(console.log)

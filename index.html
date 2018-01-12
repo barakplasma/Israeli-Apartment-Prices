@@ -19,7 +19,7 @@
 <body>
 
 <p>
-    3 Room Rental Prices in Tel Aviv
+    1 Room Rental Prices in Tel Aviv
 </p>
 
 <div id="map"></div>
@@ -60,7 +60,7 @@ housingPrices.forEach(price => {
     let marker = new L.Marker(markerLocation, {icon});
     map.addLayer(marker);
             
-    marker.bindPopup(`price: ${actualPrice}`);
+    marker.bindPopup(`price: ${actualPrice}, <a href="${price[3]}" target="_blank">view listing</a>`);
 });
 
 </script>
