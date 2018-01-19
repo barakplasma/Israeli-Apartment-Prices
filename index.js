@@ -12,7 +12,7 @@ const priceAndSize = `&fromRooms=${minRooms}&toRooms=${maxRooms}&fromPrice=${min
 const location = `location_type=3&area=47`;
 const otherOptions = `&priceOnly=1&imgOnly=1`;
 const query = location + priceAndSize + otherOptions;
-const url = baseUrl + yad2searchUrl + query;
+const url = `https://m.yad2.co.il/feed/2/2/PriceType=1&EnterDate=&location_type=2&city=1970&neighborhood=&HomeTypeID=&comment=&fromFloor=&toFloor=&fromRooms=&toRooms=&fromPrice=&toPrice=`//baseUrl + yad2searchUrl + query;
 
 osmosis.config('follow', 0)
 

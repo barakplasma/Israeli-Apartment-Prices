@@ -19,7 +19,7 @@
 <body>
 
 <p>
-    1 Room Rental Prices in Tel Aviv
+    4 Room Rental Ramat Gan
 </p>
 
 <div id="map"></div>
@@ -31,6 +31,7 @@ var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
+housingPrices = housingPrices.filter(p=>Number.isFinite(p[2]));
 // generate statistics
 var jstat = window.jStat(housingPrices.map(p=>p[2])); // jStat will be added to the window
 const priceDistribution = jstat.quantiles([0.25, 0.5, 0.75]);
@@ -42,6 +43,11 @@ document.body.appendChild(document.createElement('br'));
 
 const averagePriceElement = document.createTextNode(`average price is ${Math.floor(jstat.mean())}`);
 document.body.appendChild(averagePriceElement);
+
+document.body.appendChild(document.createElement('br'));
+
+const medianPriceElement = document.createTextNode(`median price is ${Math.floor(jstat.median())}`);
+document.body.appendChild(medianPriceElement);
 
 document.body.appendChild(document.createElement('br'));
 
