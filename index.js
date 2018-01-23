@@ -2,6 +2,10 @@ const osmosis = require('osmosis');
 const _ = require('lodash');
 const fs = require('fs');
 
+const Database = require('better-sqlite3');
+const db = new Database('rentals.db');
+const stmt = db.prepare('CREATE TABLE IF NOT EXISTS rentals (url TEXT PRIMARY KEY, price INTEGER, latlon TEXT)').run();
+
 const baseUrl = `https://m.yad2.co.il`;
 const yad2searchUrl = `/feed/2/2/`;
 const minRooms = 1;
@@ -49,7 +53,9 @@ osmosis
             const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
             _.set(listing,'price', price);
             // _.set(listing,'price', normalizeValue(price, minPrice, maxPrice));
-            console.log(listing);
+            console.log(1, listing);
+            const newRow = db.prepare(`INSERT INTO rentals (url, price, latlon) VALUES ("${listing.url}", ${listing.price}, "${listing.latlon}")`).run();
+
             fs.appendFile('./housing.json', `[${listing.latlon},${listing.price},"${listing.url}"],`, {encoding: 'utf8'}, handleErrors);
         }}
     })
