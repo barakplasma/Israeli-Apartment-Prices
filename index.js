@@ -7,7 +7,7 @@ const Database = require('better-sqlite3');
 const db = new Database('rentals.db');
 const stmt = db.prepare('CREATE TABLE IF NOT EXISTS rentals (url TEXT PRIMARY KEY, price INTEGER, latlon TEXT)').run();
 
-const createYad2Link = (location = `location_type=3&area=47`, minPrice = 1500, maxPrice = 3393, minRooms = 1, maxRooms = 2) => {
+const createYad2Link = (location, minPrice = 1500, maxPrice = 3393, minRooms = 1, maxRooms = 2) => {
     const baseUrl = `https://m.yad2.co.il`;
     const yad2searchUrl = `/feed/2/2/`;
     const otherOptions = `&priceOnly=1&imgOnly=1`;
@@ -23,8 +23,9 @@ osmosis.config('user_agent', `Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS
 
 const handleErrors = (err) => {if (err) throw err;}
 
-osmosis
-    .get(createYad2Link())
+const searchForApartmentsInLocation = (location = `location_type=3&area=47`) => {
+return osmosis
+    .get(createYad2Link(location))
     .paginate('#ad_feed_pagination_item_next_icon')
     .follow('[id^=ad_feed_ad_item_link]')
     .set({
@@ -43,22 +44,21 @@ osmosis
     })
     .data(function (listing) {
         if(_.has(listing,'latlon')){
-            // console.log(listing.latlon);
             const extractedLocation = listing.latlon.match(/=(\d+).(\d+),(\d+).(\d+)/);
         if(_.has(extractedLocation, [1]) && !_.isNil(extractedLocation[1])) {
             _.set(listing,'latlon', `${extractedLocation[1]}.${extractedLocation[2]},${extractedLocation[3]}.${extractedLocation[4]}`);
-            // console.log(listing.latlon);
             const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
             _.set(listing,'price', price);
-            // _.set(listing,'price', normalizeValue(price, minPrice, maxPrice));
-            // console.log(1, listing);
             const newRow = db.prepare(`INSERT OR REPLACE INTO rentals (url, price, latlon) VALUES ("${listing.url.href}", ${listing.price}, "${listing.latlon}")`).run();
         }}
     })
     .log(console.log)
     .error(console.log)
     .debug(console.log)
-    .then(() =>{
+}
+Promise.all(searchForApartmentsInLocation(),
+searchForApartmentsInLocation(`location_type=3&area=3`))
+    .then(() => {
         const allDBRows = db.prepare(`SELECT * from rentals ORDER BY price desc`).all()
         
         fs.writeFileSync('./housing.json','[', handleErrors);
@@ -73,6 +73,3 @@ osmosis
 
         fs.writeFile('rentalData.js', toWrite, handleErrors);
     })
-
-// https://stackoverflow.com/a/39777131
-// function normalizeValue(val, max, min) { return (val - min) / (max - min); }
