@@ -3,6 +3,8 @@ const _ = require('lodash');
 const {URL} = require('url');
 const fs = require('fs');
 
+const handleErrors = (err) => {if (err) throw err;}
+
 const Database = require('better-sqlite3');
 const db = new Database('rentals.db');
 const stmt = db.prepare('CREATE TABLE IF NOT EXISTS rentals (url TEXT PRIMARY KEY, price INTEGER, latlon TEXT)').run();
@@ -20,8 +22,6 @@ const createYad2Link = (location, minPrice = 1500, maxPrice = 3393, minRooms = 1
 osmosis.config('follow', 0)
 
 osmosis.config('user_agent', `Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25`)
-
-const handleErrors = (err) => {if (err) throw err;}
 
 const searchForApartmentsInLocation = (location = `location_type=3&area=47`) => {
 return osmosis
@@ -56,20 +56,16 @@ return osmosis
     .error(console.log)
     .debug(console.log)
 }
-Promise.all(searchForApartmentsInLocation(),
-searchForApartmentsInLocation(`location_type=3&area=3`))
-    .then(() => {
-        const allDBRows = db.prepare(`SELECT * from rentals ORDER BY price desc`).all()
-        
-        fs.writeFileSync('./housing.json','[', handleErrors);
+searchForApartmentsInLocation();
+searchForApartmentsInLocation(`location_type=3&area=3`);
 
-        allDBRows.forEach(listing => fs.appendFile('./housing.json', `[${listing.latlon},${listing.price},"${listing.url}"],`, {encoding: 'utf8'}, handleErrors));
+// write out json
+const fileLocation = './housing.json';
 
-        const middle = fs.readFileSync('./housing.json', {encoding: 'utf8'});
-        const cleanMiddle = _.trimEnd(middle, ',');
-        const toWrite = `
-            let housingPrices = ${cleanMiddle}];
-        `;
+fs.writeFileSync(fileLocation, 'let housingPrices = [', handleErrors);
 
-        fs.writeFile('rentalData.js', toWrite, handleErrors);
-    })
+const allDBRows = db.prepare(`SELECT * from rentals ORDER BY price desc`).all()
+
+allDBRows.forEach(listing => fs.appendFile(fileLocation, `,[${listing.latlon},${listing.price},"${listing.url}"]`, {encoding: 'utf8'}, handleErrors));
+
+fs.appendFile(fileLocation, `];`);
