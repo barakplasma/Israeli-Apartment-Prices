@@ -53,21 +53,24 @@ osmosis
             const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
             _.set(listing,'price', price);
             // _.set(listing,'price', normalizeValue(price, minPrice, maxPrice));
-            console.log(1, listing);
-            const newRow = db.prepare(`INSERT INTO rentals (url, price, latlon) VALUES ("${listing.url}", ${listing.price}, "${listing.latlon}")`).run();
-
-            fs.appendFile('./housing.json', `[${listing.latlon},${listing.price},"${listing.url}"],`, {encoding: 'utf8'}, handleErrors);
+            // console.log(1, listing);
+            const newRow = db.prepare(`INSERT OR REPLACE INTO rentals (url, price, latlon) VALUES ("${listing.url}", ${listing.price}, "${listing.latlon}")`).run();
         }}
     })
     .log(console.log)
     .error(console.log)
     .debug(console.log)
     .then(() =>{
+        const allDBRows = db.prepare(`SELECT * from rentals ORDER BY price desc`).all()
+
+        allDBRows.forEach(listing => fs.appendFile('./housing.json', `[${listing.latlon},${listing.price},"${listing.url}"],`, {encoding: 'utf8'}, handleErrors));
+
         const middle = fs.readFileSync('./housing.json', {encoding: 'utf8'});
         const cleanMiddle = _.trimEnd(middle, ',');
         const toWrite = `
             let housingPrices = ${cleanMiddle}];
         `;
+
         fs.writeFile('rentalData.js', toWrite, handleErrors);
     })
 
