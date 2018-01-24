@@ -66,6 +66,15 @@ fs.writeFileSync(fileLocation, 'let housingPrices = [', handleErrors);
 
 const allDBRows = db.prepare(`SELECT * from rentals ORDER BY price desc`).all()
 
-allDBRows.forEach(listing => fs.appendFile(fileLocation, `,[${listing.latlon},${listing.price},"${listing.url}"]`, {encoding: 'utf8'}, handleErrors));
+allDBRows.forEach((listing, index) => {
+    const arrayItem = `,[${listing.latlon},${listing.price},"${listing.url}"]`;
+    let append;
+    if (index === 0) {
+        append = _.trimStart(arrayItem, ',');
+    } else {
+        append = arrayItem;
+    }
+    fs.appendFile(fileLocation, append, {encoding: 'utf8'}, handleErrors)
+});
 
-fs.appendFile(fileLocation, `];`);
+fs.appendFile(fileLocation, `];`, handleErrors);
