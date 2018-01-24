@@ -31,10 +31,10 @@ var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-housingPrices = housingPrices.filter(p=>Number.isFinite(p[2]));
+housingPrices = housingPrices.filter(listing => Number.isFinite(listing.price));
 
 // generate statistics
-var jstat = window.jStat(housingPrices.map(p=>p[2])); // jStat will be added to the window
+var jstat = window.jStat(housingPrices.map(p=>p.price)); // jStat will be added to the window
 const priceDistribution = jstat.quantiles([0.25, 0.5, 0.75]);
 
 const priceDistributionDisplay = document.createTextNode(`price quantiles = .25: ${priceDistribution[0]}, .5: ${priceDistribution[1]}, .75: ${priceDistribution[2]}`);
@@ -55,14 +55,18 @@ const circle = (fill) => `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/20
     <circle cx="100" cy="100" r="100" fill="hsl(${(1 - fill) * 80}, 100%, 50%)" opacity="0.5"/>
   </svg>`;
 
-housingPrices.forEach(price => {
-    const actualPrice = price[2];
-    let markerLocation = new L.LatLng(price[0], price[1]);
-    let icon = L.icon({iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(circle(jstat.percentileOfScore(actualPrice)))}`, iconSize: [50, 50]})
+housingPrices.forEach(listing => {
+    let markerLocation = new L.LatLng(...listing.latlon.split(','));
+    let icon = L.icon({iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(circle(jstat.percentileOfScore(listing.price)))}`, iconSize: [50, 50]})
     let marker = new L.Marker(markerLocation, {icon});
     map.addLayer(marker);
-            
-    marker.bindPopup(`price: ${actualPrice}, <a href="${price[3]}" target="_blank">view listing</a>`);
+    const decodedOther = JSON.parse(decodeURI(listing.other));
+    marker.bindPopup(`
+        ${Object.keys(decodedOther).map(key => {
+            if (key === 'url') { return `<div><a href="${decodedOther.url}" target="_blank">view listing</a></div>`}
+            return `<div>${key}: ${decodedOther[key]}</div>`;
+        }).join(' ')}
+    `);
 });
 
 </script>

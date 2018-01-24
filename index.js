@@ -7,7 +7,7 @@ const handleErrors = (err) => {if (err) throw err;}
 
 const Database = require('better-sqlite3');
 const db = new Database('rentals.db');
-const stmt = db.prepare('CREATE TABLE IF NOT EXISTS rentals (url TEXT PRIMARY KEY, price INTEGER, latlon TEXT)').run();
+const stmt = db.prepare('CREATE TABLE IF NOT EXISTS rentals (url TEXT PRIMARY KEY, price INTEGER, latlon TEXT, json TEXT)').run();
 
 const createYad2Link = (location, minPrice = 1500, maxPrice = 3393, minRooms = 1, maxRooms = 2) => {
     const baseUrl = `https://m.yad2.co.il`;
@@ -27,6 +27,9 @@ const searchForApartmentsInLocation = (location = `location_type=3&area=47`) => 
 return osmosis
     .get(createYad2Link(location))
     .paginate('#ad_feed_pagination_item_next_icon')
+    .set({
+        'lastUpdated': '[id^="ad_feed_ad_item_info_line2"]'
+    })
     .follow('[id^=ad_feed_ad_item_link]')
     .set({
         'muni': '.ad_page_item_header_main_title',
@@ -49,7 +52,12 @@ return osmosis
             _.set(listing,'latlon', `${extractedLocation[1]}.${extractedLocation[2]},${extractedLocation[3]}.${extractedLocation[4]}`);
             const price = _.parseInt(listing.price.split(',').join('').slice(0,-2));
             _.set(listing,'price', price);
-            const newRow = db.prepare(`INSERT OR REPLACE INTO rentals (url, price, latlon) VALUES ("${listing.url.href}", ${listing.price}, "${listing.latlon}")`).run();
+            const jsonString = encodeURI(JSON.stringify(listing));
+            console.log(1, jsonString);
+            const newRow = db.prepare(
+                `INSERT OR REPLACE INTO rentals (url, price, latlon, json) VALUES 
+                ("${listing.url.href}", ${listing.price}, "${listing.latlon}", "${jsonString}")`
+            ).run();
         }}
     })
     .log(console.log)
@@ -67,7 +75,7 @@ fs.writeFileSync(fileLocation, 'let housingPrices = [', handleErrors);
 const allDBRows = db.prepare(`SELECT * from rentals ORDER BY price desc`).all()
 
 allDBRows.forEach((listing, index) => {
-    const arrayItem = `,[${listing.latlon},${listing.price},"${listing.url}"]`;
+    const arrayItem = `,{latlon: "${listing.latlon}", price: ${listing.price}, url: "${listing.url}", other: "${listing.json}"}`;
     let append;
     if (index === 0) {
         append = _.trimStart(arrayItem, ',');
