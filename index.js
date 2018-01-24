@@ -60,7 +60,7 @@ searchForApartmentsInLocation();
 searchForApartmentsInLocation(`location_type=3&area=3`);
 
 // write out json
-const fileLocation = './housing.json';
+const fileLocation = './rentalData.js';
 
 fs.writeFileSync(fileLocation, 'let housingPrices = [', handleErrors);
 
