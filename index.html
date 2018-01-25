@@ -10,17 +10,18 @@
     <script src="./rentalData.js"></script>
 
     <style>
+        .leaflet-container { font: 1.6rem "Helvetica Neue", Arial, sans-serif; }
         #map { width: 100vw; height: 80vh; }
-        body { font: 20px "Helvetica Neue", Arial, sans-serif; }
+        body { font: 1.6rem "Helvetica Neue", Arial, sans-serif; }
         .ghbtns { position: relative; top: 4px; margin-left: 5px; }
         a { color: #0077ff; }
     </style>
 </head>
 <body>
 
-<p>
+<h1>
     1 Room Rental Prices in Tel Aviv
-</p>
+</h1>
 
 <div id="map"></div>
 
@@ -57,7 +58,7 @@ const circle = (fill) => `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/20
 
 housingPrices.forEach(listing => {
     let markerLocation = new L.LatLng(...listing.latlon.split(','));
-    let icon = L.icon({iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(circle(jstat.percentileOfScore(listing.price)))}`, iconSize: [50, 50]})
+    let icon = L.icon({iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(circle(jstat.percentileOfScore(listing.price)))}`, iconSize: [70, 70]})
     let marker = new L.Marker(markerLocation, {icon});
     map.addLayer(marker);
     const decodedOther = JSON.parse(decodeURI(listing.other));
