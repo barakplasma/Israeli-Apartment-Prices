@@ -10,9 +10,8 @@
     <script src="./rentalData.js"></script>
 
     <style>
-        .leaflet-container { font: 1.6rem "Helvetica Neue", Arial, sans-serif; }
-        #map { width: 100vw; height: 80vh; }
-        body { font: 1.6rem "Helvetica Neue", Arial, sans-serif; }
+        body, div {font: 1rem "Helvetica Neue", Arial, sans-serif;}
+        #map { width: 100vw; height: 70vh;}
         .ghbtns { position: relative; top: 4px; margin-left: 5px; }
         a { color: #0077ff; }
     </style>
@@ -38,18 +37,20 @@ housingPrices = housingPrices.filter(listing => Number.isFinite(listing.price));
 var jstat = window.jStat(housingPrices.map(p=>p.price)); // jStat will be added to the window
 const priceDistribution = jstat.quantiles([0.25, 0.5, 0.75]);
 
-const priceDistributionDisplay = document.createTextNode(`price quantiles = .25: ${priceDistribution[0]}, .5: ${priceDistribution[1]}, .75: ${priceDistribution[2]}`);
-document.body.appendChild(priceDistributionDisplay);
+const addElementToDom = (newChild) => {
+    const newDiv = document.createElement('div')
+    newDiv.appendChild(newChild);
+    document.body.appendChild(newDiv);
+};
 
-document.body.appendChild(document.createElement('br'));
+const priceDistributionDisplay = document.createTextNode(`price quantiles = .25: ${priceDistribution[0]}, .5: ${priceDistribution[1]}, .75: ${priceDistribution[2]}`);
+addElementToDom(priceDistributionDisplay);
 
 const averagePriceElement = document.createTextNode(`average price is ${Math.floor(jstat.mean())}`);
-document.body.appendChild(averagePriceElement);
-
-document.body.appendChild(document.createElement('br'));
+addElementToDom(averagePriceElement);
 
 const priceHistogramDisplay = document.createTextNode(`price histogram: ${jstat.histogram(4)}`);
-document.body.appendChild(priceHistogramDisplay);
+addElementToDom(priceHistogramDisplay);
 
 // add markers
 const circle = (fill) => `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
