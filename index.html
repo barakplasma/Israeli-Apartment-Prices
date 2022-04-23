@@ -4,7 +4,7 @@
     <title>Rental Price Demo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
-    
+
     <script src='https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js'></script>
 
     <script src="./rentalData.js"></script>
@@ -19,13 +19,13 @@
 <body>
 
 <h1>
-    1 Room Rental Prices in Tel Aviv
+    Selected Apartments for Sale
 </h1>
 
 <div id="map"></div>
 
 <script>
-var map = L.map('map').setView([32.097244,34.774262], 14);
+var map = L.map('map').setView([32.081422,34.804167], 16);
 
 var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
